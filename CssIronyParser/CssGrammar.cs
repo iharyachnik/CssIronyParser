@@ -15,32 +15,32 @@ namespace CssIronyParser
 
             #region 1. Terminals
 
-            var ident = new RegexBasedTerminal(@"[-]?([_a-z]|[^\0-\177]|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))([_a-z0-9-]|[^\0-\177]|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*");
-            var name = new RegexBasedTerminal(@"([_a-z0-9-]|([^\0-\177])|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))+");
-            var nmstart = new RegexBasedTerminal(@"[_a-z]|[^\0-\177]|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f])");
+            var ident = new RegexBasedTerminal(@"[-]?([_a-z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))([_a-z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*");
+            var name = new RegexBasedTerminal(@"([_a-z0-9-]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))+");
+            var nmstart = new RegexBasedTerminal(@"[_a-z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])");
             var nonascii = new RegexBasedTerminal(@"[^\0-\177]");
-            var unicode = new RegexBasedTerminal(@"\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?");
-            var escape = new RegexBasedTerminal(@"(\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]");
-            var nmchar = new RegexBasedTerminal(@"[_a-z0-9-]|[^\0-\177]|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f])");
+            var unicode = new RegexBasedTerminal(@"\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?");
+            var escape = new RegexBasedTerminal(@"(\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]");
+            var nmchar = new RegexBasedTerminal(@"[_a-z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])");
             var num = new RegexBasedTerminal(@"[+-]?([0-9]+|[0-9]*\.[0-9]+)(e[+-]?[0-9]+)?");
-            var string1 = new RegexBasedTerminal(@"""([^\n\r\f\""]|\\(\n|\r\n|\r|\f)|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*""");
-            var string2 = new RegexBasedTerminal(@"'([^\n\r\f\']|\\(\n|\r\n|\r|\f)|{(\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]})*'");
+            var string1 = new RegexBasedTerminal(@"""([^\n\r\f\""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*""");
+            var string2 = new RegexBasedTerminal(@"'([^\n\r\f\']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*'");
             var String = string1 | string2;
-            var badstring1 = new RegexBasedTerminal(@"""([^\n\r\f\""]|\\{nl}|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*\\?");
-            var badstring2 = new RegexBasedTerminal(@"'([^\n\r\f\']|\\{nl}|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*\\?");
+            var badstring1 = new RegexBasedTerminal(@"""([^\n\r\f\""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*\?");
+            var badstring2 = new RegexBasedTerminal(@"'([^\n\r\f\']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*\?");
             var badstring = badstring1 | badstring2;
             var badcomment1 = new RegexBasedTerminal(@"\/\*[^*]*\*+([^/*][^*]*\*+)*");
             var badcomment2 = new RegexBasedTerminal(@"\/\*[^*]*(\*+[^/*][^*]*)*");
             var badcomment = badstring1 | badstring2;
-            var baduri1 = new RegexBasedTerminal(@"(u|\\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r)(l|\\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)([!#$%&*-~]|([^\0-\177])|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*([ \t\r\n\f]*)");
-            var baduri2 = new RegexBasedTerminal(@"(u|\\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r)(l|\\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\\(\n|\r\n|\r|\f)|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*"")|('([^\n\r\f\']|\\(\n|\r\n|\r|\f)|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*'))([ \t\r\n\f]*)");
-            var baduri3 = new RegexBasedTerminal(@"(u|\\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r)(l|\\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\\(\n|\r\n|\r|\f)|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*\\?)|('([^\n\r\f\']|\\(\n|\r\n|\r|\f)|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*\\?))");
+            var baduri1 = new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\l)\(([ \t\r\n\f]*)([!#$%&*-~]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*([ \t\r\n\f]*)");
+            var baduri2 = new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*"")|('([^\n\r\f\']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*'))([ \t\r\n\f]*)");
+            var baduri3 = new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*\?)|('([^\n\r\f\']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*\?))");
             var baduri = baduri1 | baduri2 | baduri3;
             var nl = new RegexBasedTerminal(@"\n|\r\n|\r|\f");
             var w = new RegexBasedTerminal(@"[ \t\r\n\f]*");
-            var L = new RegexBasedTerminal(@"l|\\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l");
-            var R = new RegexBasedTerminal(@"r|\\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r");
-            var U = new RegexBasedTerminal(@"u|\\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u");
+            var L = new RegexBasedTerminal(@"l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\l");
+            var R = new RegexBasedTerminal(@"r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r");
+            var U = new RegexBasedTerminal(@"u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\u");
             var S = new RegexBasedTerminal(@"[ \t\r\n\f]+");
             var COMMENT = new RegexBasedTerminal(@"\/\*[^*]*\*+([^/*][^*]*\*+)*\/");
             var DASHMATCH = ToTerm("|=");
@@ -82,8 +82,8 @@ namespace CssIronyParser
 
             #region 3. BNF-rules
 
-            URI.Rule = new RegexBasedTerminal(@"(u|\\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r)(l|\\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\\(\n|\r\n|\r|\f)|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*"")|('([^\n\r\f\']|\\(\n|\r\n|\r|\f)|{(\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]})*'))([ \t\r\n\f]*)\)")
-                        | new RegexBasedTerminal(@"(u|\\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r)(l|\\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)([!#$%&*-\[\]-~]|([^\0-\177])|((\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*([ \t\r\n\f]*)\)");
+            URI.Rule = new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*"")|('([^\n\r\f\']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*'))([ \t\r\n\f]*)\)")
+                        | new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\l)\(([ \t\r\n\f]*)([!#$%&*-\[\]-~]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*([ \t\r\n\f]*)\)");
 
             UNICODE_RANGE.Rule = new RegexBasedTerminal(@"u\+[?]{1,6}")
                                 | new RegexBasedTerminal(@"u\+[0-9a-f]{1}[?]{0,5}")
