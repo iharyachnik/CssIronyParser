@@ -45,7 +45,7 @@ namespace CssIronyParser
             var COMMENT = new RegexBasedTerminal(@"\/\*[^*]*\*+([^/*][^*]*\*+)*\/");
             var DASHMATCH = ToTerm("|=");
             var INCLUDES = ToTerm("~=");
-
+            
             #endregion
 
             #region 2. Non-terminals

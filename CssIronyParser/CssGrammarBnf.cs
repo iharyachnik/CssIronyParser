@@ -17,15 +17,28 @@ namespace CssIronyParser
         {
             #region 1. Terminals
 
-            var string1 = new RegexBasedTerminal("string1", ""); // add regex
+            var string1 = new RegexBasedTerminal("string1", @""); // add regex
             var string2 = new RegexBasedTerminal("string2", ""); // add regex 
             var S = new RegexBasedTerminal("S", @"[ \t\r\n\f]+");
-            var CDO = new RegexBasedTerminal("CDO", @"(<!--)");
-            var CDC = new RegexBasedTerminal("CDC", @"(-->)");
+            var CDO = new RegexBasedTerminal("CDO", @"<!--");
+            var CDC = new RegexBasedTerminal("CDC", @"-->");
             var IMPORT_SYM = new RegexBasedTerminal("IMPORT_SYM", ""); // add regex
             var MEDIA_SYM = new RegexBasedTerminal("MEDIA_SYM", ""); // add regex
             var IDENT = new RegexBasedTerminal("IDENT", ""); // add regex
             var PAGE_SYM = new RegexBasedTerminal("PAGE_SYM", ""); // add regex
+            var HASH = new RegexBasedTerminal("HASH", ""); // add regex
+            var INCLUDES = new RegexBasedTerminal("INCLUDES", @"~=");
+            var DASHMATCH = new RegexBasedTerminal("DASHMATCH", @"|=");
+            var FUNCTION = new RegexBasedTerminal("FUNCTION", @""); // add regex
+            var IMPORTANT_SYM = new RegexBasedTerminal("IMPORTANT_SYM", @""); // add regex
+            var NUMBER = new RegexBasedTerminal("NUMBER", @""); // add regex
+            var PERCENTAGE = new RegexBasedTerminal("PERCENTAGE", @""); // add regex
+            var LENGTH = new NonTerminal("LENGTH", @""); // add regex
+            var EMS = new RegexBasedTerminal("EMS", @""); // add regex
+            var EXS = new RegexBasedTerminal("EXS", @""); // add regex
+            var ANGLE = new RegexBasedTerminal("ANGLE", @""); // add regex
+            var TIME = new RegexBasedTerminal("TIME", @""); // add regex
+            var FREQ = new NonTerminal("FREQ", @""); // add regex
 
             #endregion
 
@@ -63,7 +76,8 @@ namespace CssIronyParser
             var stylesheetGr2_2 = new NonTerminal("stylesheetGr2_2"); // [ import [ CDO S* | CDC S* ]* ]
             var stylesheetGr2_2_star = new NonTerminal("stylesheetGr2_2_"); // [ import [ CDO S* | CDC S* ]* ]*
             var stylesheetGr2_2_1 = new NonTerminal("stylesheetGr2_2_1"); // [ CDO S* | CDC S* ]
-            var S_star = new NonTerminal("SStar"); // S*
+            var S_star = new NonTerminal("S_star"); // S*
+            var S_plus = new NonTerminal("S_plus"); // S+
             var stylesheetGr2_2_1_star = new NonTerminal("stylesheetGr2_2_1_"); // [ CDO S* | CDC S* ]*
             var stylesheetGr2 = new NonTerminal("stylesheetGr2"); // [S|CDO|CDC]* [ import [ CDO S* | CDC S* ]* ]
             var stylesheetGr3 = new NonTerminal("stylesheetGr3"); // [ [ ruleset | media | page ] [ CDO S* | CDC S* ]* ]         [ CDO S* | CDC S* ]* = 2_2_1_
@@ -80,13 +94,26 @@ namespace CssIronyParser
             var rulesetGr1_1_star = new NonTerminal("rulesetGr1_1_star"); // [ ',' S* selector ]*
             var rulesetGr2_1 = new NonTerminal("rulesetGr2_1"); // [ ';' S* declaration? ]
             var rulesetGr2_1_star = new NonTerminal("rulesetGr2_1_star"); // [ ';' S* declaration? ]*
+            var selectorGr1_1 = new NonTerminal("selectorGr1_1"); // [ combinator? selector ]
+            var selectorGr1_2 = new NonTerminal("selectorGr1_2"); // [ combinator selector | S+ [ combinator? selector ]
+            var simple_selectorGr1_1 = new NonTerminal("simple_selectorGr1_1"); // [ HASH | class | attrib | pseudo ]
+            var simple_selectorGr1_1_star = new NonTerminal("simple_selectorGr1_1_star"); // [ HASH | class | attrib | pseudo ]*
+            var simple_selectorGr1_1_plus = new NonTerminal("simple_selectorGr1_1_plus"); // [ HASH | class | attrib | pseudo ]+
+            var attribGr1_1 = new NonTerminal("attribGr1_1"); // [ '=' | INCLUDES | DASHMATCH ]
+            var attribGr1_2 = new NonTerminal("attribGr1_2"); // [ IDENT | STRING ]
+            var attribGr1_3 = new NonTerminal("attribGr1_3"); // [ [ '=' | INCLUDES | DASHMATCH ] S* [ IDENT | STRING ] S* ]
+            var pseudoGr1_1 = new NonTerminal("pseudoGr1_1"); // [ IDENT | FUNCTION S* [IDENT S*]? ')' ]
+            var pseudoGr1_2 = new NonTerminal("pseudoGr1_2"); // [IDENT S*]
+            var exprGr1_1 = new NonTerminal("exprGr1_1"); // [ operator? term ]
+            var exprGr1_1_star = new NonTerminal("exprGr1_1_star"); // [ operator? term ]*
+            var termGr1_1 = new NonTerminal("termGr1_1"); // [ NUMBER S* | PERCENTAGE S* | LENGTH S* | EMS S* | EXS S* | ANGLE S* | TIME S* | FREQ S* ]
 
             #endregion
 
             #region 3. BNF rules
 
             #region stylesheet rule
-            
+
             //BNF form:
             //stylesheet
             //  : [ CHARSET_SYM STRING ';' ]?
@@ -281,6 +308,193 @@ namespace CssIronyParser
 
             ruleset.Rule = selector + rulesetGr1_1_star
                            | ToTerm("{") + S_star + declaration.Q() + rulesetGr2_1_star + "}" + S_star;
+
+            #endregion
+
+            #region selector rule
+
+            // BNF form:
+            //selector
+            //  : simple_selector [ combinator selector | S+ [ combinator? selector ]? ]?
+            //  ;
+
+            S_plus.Rule = MakePlusRule(S_plus, S);
+
+            selectorGr1_1.Rule = combinator.Q() + selector;
+
+            selectorGr1_2.Rule = combinator + selector
+                                 | S_plus + selectorGr1_1.Q();
+
+            selector.Rule = simple_selector + selectorGr1_2.Q();
+
+            #endregion
+
+            #region simple_selector rule
+
+            // BNF form:
+            //simple_selector
+            //  : element_name [ HASH | class | attrib | pseudo ]*
+            //  | [ HASH | class | attrib | pseudo ]+
+            //  ;
+
+            simple_selectorGr1_1.Rule = HASH
+                                        | Class
+                                        | attrib
+                                        | pseudo;
+
+            simple_selectorGr1_1_star.Rule = MakeStarRule(simple_selectorGr1_1_star, simple_selectorGr1_1);
+
+            simple_selectorGr1_1_plus.Rule = MakePlusRule(simple_selectorGr1_1_plus, simple_selectorGr1_1);
+
+            simple_selector.Rule = element_name + simple_selectorGr1_1_star
+                                   | simple_selectorGr1_1_plus;
+
+            #endregion
+
+            #region class rule
+
+            // BNF form:
+            //class
+            //  : '.' IDENT
+            //  ;
+
+            Class.Rule = ToTerm(".") + IDENT;
+
+            #endregion
+
+            #region element_name rule
+
+            // BNF form:
+            //element_name
+            //  : IDENT | '*'
+            //  ;
+
+            element_name.Rule = IDENT
+                                | ToTerm("*");
+
+            #endregion
+
+            #region attrib rule
+
+            // BNF form:
+            //attrib
+            //  : '[' S* IDENT S* [ [ '=' | INCLUDES | DASHMATCH ] S*
+            //    [ IDENT | STRING ] S* ]? ']'
+            //  ;
+
+            attribGr1_1.Rule = ToTerm("=")
+                               | INCLUDES
+                               | DASHMATCH;
+
+            attribGr1_2.Rule = IDENT
+                               | STRING;
+
+            attribGr1_3.Rule = attribGr1_1 + S_star + attribGr1_2 + S_star;
+
+            attrib.Rule = ToTerm("[") + S_star + IDENT + S_star + attribGr1_3.Q() + "]";
+
+            #endregion
+
+            #region pseudo rule
+
+            // BNF form:
+            //pseudo
+            //  : ':' [ IDENT | FUNCTION S* [IDENT S*]? ')' ]
+            //  ;
+
+            pseudoGr1_2.Rule = IDENT + S_star;
+
+            pseudoGr1_1.Rule = IDENT
+                               | FUNCTION + S_star + pseudoGr1_2.Q() + ")";
+
+            pseudo.Rule = ToTerm(":") + pseudoGr1_1;
+
+            #endregion
+
+            #region declaration rule
+
+            // BNF form:
+            //declaration
+            //  : property ':' S* expr prio?
+            //  ;
+
+            declaration.Rule = property + ":" + S_star + expr + prio.Q();
+
+            #endregion
+
+            #region prio rule
+
+            // BNF form:
+            //prio
+            //  : IMPORTANT_SYM S*
+            //  ;
+
+            prio.Rule = IMPORTANT_SYM + S_star;
+
+            #endregion
+
+            #region expr rule
+
+            // BNF form:
+            //expr
+            //  : term [ operator? term ]*
+            //  ;
+
+            exprGr1_1.Rule = Operator.Q() + term;
+
+            exprGr1_1_star.Rule = MakeStarRule(exprGr1_1_star, exprGr1_1);
+
+            expr.Rule = term + exprGr1_1_star;
+
+            #endregion
+
+            #region term rule
+
+            // BNF form:
+            //term
+            //  : unary_operator?
+            //    [ NUMBER S* | PERCENTAGE S* | LENGTH S* | EMS S* | EXS S* | ANGLE S* |
+            //      TIME S* | FREQ S* ]
+            //  | STRING S* | IDENT S* | URI S* | hexcolor | function
+            //  ;
+
+            termGr1_1.Rule = NUMBER + S_star
+                             | PERCENTAGE + S_star
+                             | LENGTH + S_star
+                             | EMS + S_star
+                             | EXS + S_star
+                             | ANGLE + S_star
+                             | TIME + S_star
+                             | FREQ + S_star;
+
+            term.Rule = unary_operator.Q() + termGr1_1
+                        | STRING + S_star
+                        | IDENT + S_star
+                        | URI + S_star
+                        | hexcolor
+                        | function;
+
+            #endregion
+
+            #region function rule
+
+            // BNF form:
+            //function
+            //  : FUNCTION S* expr ')' S*
+            //  ;
+
+            function.Rule = FUNCTION + S_star + expr + ")" + S_star;
+
+            #endregion
+
+            #region hexcolor
+
+            // BNF form:
+            //hexcolor
+            //  : HASH S*
+            //  ;
+
+            hexcolor.Rule = HASH + S_star;
 
             #endregion
 
