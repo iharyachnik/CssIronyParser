@@ -15,13 +15,13 @@ namespace CssIronyParser
 
             #region 1. Terminals
 
-            var ident = new RegexBasedTerminal(@"[-]?([_a-z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))([_a-z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*");
-            var name = new RegexBasedTerminal(@"([_a-z0-9-]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))+");
+            var ident = new RegexBasedTerminal(@"[-]?([_a-z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))([_a-zA-Z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*");
+            var name = new RegexBasedTerminal(@"([_a-zA-Z0-9-]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))+");
             var nmstart = new RegexBasedTerminal(@"[_a-z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])");
             var nonascii = new RegexBasedTerminal(@"[^\0-\177]");
             var unicode = new RegexBasedTerminal(@"\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?");
             var escape = new RegexBasedTerminal(@"(\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]");
-            var nmchar = new RegexBasedTerminal(@"[_a-z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])");
+            var nmchar = new RegexBasedTerminal(@"[_a-zA-Z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])");
             var num = new RegexBasedTerminal(@"[+-]?([0-9]+|[0-9]*\.[0-9]+)(e[+-]?[0-9]+)?");
             var string1 = new RegexBasedTerminal(@"""([^\n\r\f""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])*""");
             var string2 = new RegexBasedTerminal(@"'([^\n\r\f']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])*'");
@@ -42,7 +42,8 @@ namespace CssIronyParser
             var R = new RegexBasedTerminal(@"r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\\r");
             var U = new RegexBasedTerminal(@"u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u");
             var S = new RegexBasedTerminal(@"[ \t\r\n\f]+");
-            var COMMENT = new RegexBasedTerminal(@"\/\*[^*]*\*+([^/*][^*]*\*+)*\/");
+            var COMMENT = new CommentTerminal("COMMENT", "/*", "*/");
+            NonGrammarTerminals.Add(COMMENT);
             var DASHMATCH = ToTerm("|=");
             var INCLUDES = ToTerm("~=");
             

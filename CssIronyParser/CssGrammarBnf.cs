@@ -8,37 +8,40 @@ using Irony.Parsing;
 namespace CssIronyParser
 {
     // Used grammar:
-    // http://www.w3.org/TR/CSS21/grammar.html
+    // http://dev.w3.org/csswg/css2/grammar.html
 
-    [Language("Css 2.1")]
+    [Language("CSS","2.2", "BNF")]
     class CssGrammarBnf : Grammar
     {
         public CssGrammarBnf()
         {
             #region 1. Terminals
 
-            var string1 = new RegexBasedTerminal("string1", @""); // add regex
-            var string2 = new RegexBasedTerminal("string2", ""); // add regex 
+            var Comment = new CommentTerminal("Comment", "/*", "*/");
+            NonGrammarTerminals.Add(Comment);
+
+            var string1 = new RegexBasedTerminal("string1", @"""([^\n\r\f""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])*""");
+            var string2 = new RegexBasedTerminal("string2", @"'([^\n\r\f']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f])*'");
             var S = new RegexBasedTerminal("S", @"[ \t\r\n\f]+");
             var CDO = new RegexBasedTerminal("CDO", @"<!--");
             var CDC = new RegexBasedTerminal("CDC", @"-->");
-            var IMPORT_SYM = new RegexBasedTerminal("IMPORT_SYM", ""); // add regex
-            var MEDIA_SYM = new RegexBasedTerminal("MEDIA_SYM", ""); // add regex
-            var IDENT = new RegexBasedTerminal("IDENT", ""); // add regex
-            var PAGE_SYM = new RegexBasedTerminal("PAGE_SYM", ""); // add regex
-            var HASH = new RegexBasedTerminal("HASH", ""); // add regex
+            var IMPORT_SYM = new RegexBasedTerminal("IMPORT_SYM", "@import"); // add regex
+            var MEDIA_SYM = new RegexBasedTerminal("MEDIA_SYM", "@media"); // add regex
+            var IDENT = new RegexBasedTerminal("IDENT", @"[-]?([_a-zA-Z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))([_a-zA-Z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*"); // add regex
+            var PAGE_SYM = new RegexBasedTerminal("PAGE_SYM", "@page"); // add regex
+            var HASH = new RegexBasedTerminal("HASH", @"#([_a-zA-Z0-9-]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))+"); // add regex
             var INCLUDES = new RegexBasedTerminal("INCLUDES", @"~=");
             var DASHMATCH = new RegexBasedTerminal("DASHMATCH", @"|=");
-            var FUNCTION = new RegexBasedTerminal("FUNCTION", @""); // add regex
+            var FUNCTION = new RegexBasedTerminal("FUNCTION", @"[-]?([_a-z]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))([_a-zA-Z0-9-]|[^\0-\177]|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*\("); // add regex
             var IMPORTANT_SYM = new RegexBasedTerminal("IMPORTANT_SYM", @""); // add regex
-            var NUMBER = new RegexBasedTerminal("NUMBER", @""); // add regex
-            var PERCENTAGE = new RegexBasedTerminal("PERCENTAGE", @""); // add regex
-            var LENGTH = new NonTerminal("LENGTH", @""); // add regex
+            var NUMBER = new RegexBasedTerminal("NUMBER", @"[+-]?([0-9]+|[0-9]*\.[0-9]+)(e[+-]?[0-9]+)?"); 
+            var PERCENTAGE = new RegexBasedTerminal("PERCENTAGE", @"[+-]?([0-9]+|[0-9]*\.[0-9]+)(e[+-]?[0-9]+)?%");
+            var LENGTH = new RegexBasedTerminal("LENGTH", @""); // add regex
             var EMS = new RegexBasedTerminal("EMS", @""); // add regex
             var EXS = new RegexBasedTerminal("EXS", @""); // add regex
             var ANGLE = new RegexBasedTerminal("ANGLE", @""); // add regex
             var TIME = new RegexBasedTerminal("TIME", @""); // add regex
-            var FREQ = new NonTerminal("FREQ", @""); // add regex
+            var FREQ = new RegexBasedTerminal("FREQ", @""); // add regex
 
             #endregion
 
@@ -109,6 +112,9 @@ namespace CssIronyParser
             var termGr1_1 = new NonTerminal("termGr1_1"); // [ NUMBER S* | PERCENTAGE S* | LENGTH S* | EMS S* | EXS S* | ANGLE S* | TIME S* | FREQ S* ]
 
             #endregion
+
+            URI.Rule = new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)((""([^\n\r\f\""]|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*"")|('([^\n\r\f\']|\(\n|\r\n|\r|\f)|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\[^\n\r\f0-9a-f]))*'([ \t\r\n\f]*)\)")
+                        | new RegexBasedTerminal(@"(u|\0(0,4)(55|75)(\r\n|[ \t\r\n\f])?|\\u)(r|\0(0,4)(52|72)(\r\n|[ \t\r\n\f])?|\r)(l|\0(0,4)(4c|6c)(\r\n|[ \t\r\n\f])?|\\l)\(([ \t\r\n\f]*)([!#$%&*-\[\]-~]|([^\0-\177])|((\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?)|\\[^\n\r\f0-9a-f]))*([ \t\r\n\f]*)\)");
 
             #region 3. BNF rules
 
@@ -497,6 +503,8 @@ namespace CssIronyParser
             hexcolor.Rule = HASH + S_star;
 
             #endregion
+
+            this.Root = stylesheet;
 
             #endregion
 
